@@ -15,9 +15,15 @@ Facilitar tarefas repetitivas, melhorar a confiabilidade dos dados e acelerar a 
 ### 🔄 `consolidar-todas-as-abas.bas`
 Consolida dados de todas as abas de arquivos Excel, copia apenas os valores (inclusive células mescladas) e insere o nome do hotel na primeira coluna.
 
-## 💻 Script PowerShell
+**🔹 Uso:**
+1. Coloque todas as planilhas em uma pasta.
+2. Ajuste o caminho da pasta "PastaOrigem" no script.
+3. Copie o script, clique alt+F11, modulo 1, cole o script.
+4. Execute o comando com alt+F8.
 
-```powershell
+## 💻 Script
+
+```
 Sub Consolidar_Mescladas()
 
     Dim PastaOrigem As String
@@ -99,8 +105,111 @@ End Sub
 ### 📋 `replicar-celulas-mescladas.bas`
 Replica valores de células mescladas em todas as linhas correspondentes, útil para manter dados completos linha a linha para uso no Power BI.
 
+## 💻 Script VBA
+
+```
+Sub PreencherVaziosMultiplasColunas()
+
+    Dim rng As Range
+    Dim celulasVazias As Range
+    Dim cel As Range
+    Dim wsAtual As Worksheet
+
+    Set wsAtual = ActiveSheet
+
+    On Error GoTo Limpar
+
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+
+    Set rng = Selection
+    Set celulasVazias = rng.SpecialCells(xlCellTypeBlanks)
+
+    If Not celulasVazias Is Nothing Then
+        For Each cel In celulasVazias
+            If cel.Row > 1 Then
+                If Not IsEmpty(cel.Offset(-1, 0)) Then
+                    cel.Value = cel.Offset(-1, 0).Value
+                End If
+            End If
+        Next cel
+    Else
+        MsgBox "Não há células vazias no intervalo selecionado.", vbInformation
+    End If
+
+Limpar:
+    wsAtual.Activate
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+
+End Sub
+```
+
 ### 🔍 `marcar-duplicidades-cor.bas`
 Verifica duplicidades em uma coluna e aplica cor de fundo nas células duplicadas para facilitar análise visual.
+
+
+## 💻 Script 
+
+```
+Sub VerificarHospedagemDuplicada()
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("OUT.2025")
+    
+    Dim ultimaLinha As Long
+    ultimaLinha = ws.Cells(ws.Rows.Count, "H").End(xlUp).Row
+    
+    ' Definindo colunas fixas por nome
+    Dim colNome As Integer: colNome = ws.Range("H1").Column
+    Dim colTipoHosp As Integer: colTipoHosp = ws.Range("J1").Column
+    Dim colInicio As Integer: colInicio = ws.Range("L1").Column
+    Dim colFim As Integer: colFim = ws.Range("AP1").Column
+
+    Dim col As Integer, linha As Long
+    Dim dict As Object
+    Dim nomeFuncionario As String
+    Dim tipoHospedagem As String
+    Dim chave As String
+
+    ' Limpar formatação anterior
+    ws.Range(ws.Cells(5, colInicio), ws.Cells(ultimaLinha, colFim)).Interior.ColorIndex = xlNone
+
+    ' Verifica cada coluna de data (dia)
+    For col = colInicio To colFim
+        Set dict = CreateObject("Scripting.Dictionary")
+        
+        For linha = 5 To ultimaLinha
+            nomeFuncionario = Trim(ws.Cells(linha, colNome).Value)
+            tipoHospedagem = UCase(Trim(ws.Cells(linha, colTipoHosp).Value))
+            
+            ' Verifica se é hospedagem e a célula do dia não está vazia
+            If nomeFuncionario <> "" And tipoHospedagem = "HOSP" And ws.Cells(linha, col).Value <> "" Then
+                chave = nomeFuncionario
+                
+                If dict.exists(chave) Then
+                    ' Marcar duplicações em vermelho
+                    ws.Cells(dict(chave), col).Interior.Color = RGB(255, 150, 150)
+                    ws.Cells(linha, col).Interior.Color = RGB(255, 150, 150)
+                    
+                    ' Opcional: adicionar comentário (descomente se quiser usar)
+                    ' On Error Resume Next
+                    ' ws.Cells(linha, col).AddComment "Duplicado: " & nomeFuncionario
+                    ' On Error GoTo 0
+                    
+                Else
+                    dict.Add chave, linha
+                End If
+            End If
+        Next linha
+    Next col
+
+    MsgBox "Verificação concluída. Células duplicadas foram destacadas.", vbInformation
+
+End Sub
+```
 
 ---
 
