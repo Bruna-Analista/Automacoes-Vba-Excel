@@ -1,6 +1,6 @@
 # 🧰 Automação VBA para Excel 
 
-Este repositório reúne **macros VBA** desenvolvidas para automatizar tarefas comuns no Excel. São soluções aplicadas na rotina de controle de custos e dados operacionais em empresas de construção civil.
+Este repositório reúne **macros VBA** desenvolvidas para automatizar tarefas comuns no Excel. São soluções aplicadas na rotina de controle de custos e dados operacionais em empresas de construção civil. 
 
 ---
 
